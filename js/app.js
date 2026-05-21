@@ -45,7 +45,11 @@ const state = {
   textColors: { title: CONFIG.text.defaultColor, date: CONFIG.text.defaultColor, testo: CONFIG.text.defaultColor },
 
   // Text sizes
-  sizeRatio: { titolo: CONFIG.typography.titoloSizeRatio, testo: CONFIG.typography.testoSizeRatio },
+  sizeRatio: {
+    titolo:    CONFIG.typography.titoloSizeRatio,
+    testo:     CONFIG.typography.testoSizeRatio,
+    dataLuogo: CONFIG.typography.dataLuogoSizeRatio,
+  },
 
   // ── Objects ──
   letterOverlays:    [],
@@ -1247,6 +1251,38 @@ function buildLogoControls() {
       (id) => { logo.align = (logo.align === id ? undefined : id); }
     );
 
+    // Size slider (per logo)
+    {
+      const szRow = document.createElement('div');
+      szRow.className = 'ctrl-slider-row';
+      const szLbl = document.createElement('span');
+      szLbl.className = 'ctrl-slider-label';
+      szLbl.textContent = 'Dimensione';
+      const szRange = document.createElement('input');
+      szRange.type = 'range';
+      szRange.className = 'field-range';
+      szRange.style.flex = '1';
+      szRange.min = '0.02';
+      szRange.max = '0.30';
+      szRange.step = '0.005';
+      const currentRatio = logo.sizeRatio || CONFIG.typography.logoHeightRatio || 0.072;
+      szRange.value = String(currentRatio);
+      const szVal = document.createElement('span');
+      szVal.className = 'ctrl-slider-val';
+      const pctFmt = (v) => Math.round(v * 100) + '%';
+      szVal.textContent = pctFmt(currentRatio);
+      let _szFirst = false;
+      szRange.addEventListener('mousedown', () => { _szFirst = true; });
+      szRange.addEventListener('input', () => {
+        if (_szFirst) { pushHistory(); _szFirst = false; }
+        logo.sizeRatio = Number(szRange.value);
+        szVal.textContent = pctFmt(logo.sizeRatio);
+        drawSmooth();
+      });
+      szRow.append(szLbl, szRange, szVal);
+      card.appendChild(szRow);
+    }
+
     // Color picker for SVG logos
     if (logo.dataURL && logo.dataURL.startsWith('data:image/svg')) {
       buildColorButton(card, {
@@ -1745,8 +1781,9 @@ function buildTextSizeSliders(host) {
 
   const titoloRatio = state.sizeRatio.titolo || CONFIG.typography.titoloSizeRatio;
   [
-    { key: 'titolo', label: 'Titolo', min: CONFIG.typography.sizeSliderMin, max: CONFIG.typography.sizeSliderMax },
-    { key: 'testo',  label: 'Testo',  min: CONFIG.typography.sizeSliderMin, max: Math.min(CONFIG.typography.sizeSliderMax, titoloRatio) },
+    { key: 'titolo',    label: 'Titolo',        min: CONFIG.typography.sizeSliderMin, max: CONFIG.typography.sizeSliderMax },
+    { key: 'testo',     label: 'Testo',         min: CONFIG.typography.sizeSliderMin, max: Math.min(CONFIG.typography.sizeSliderMax, titoloRatio) },
+    { key: 'dataLuogo', label: 'Data e Luogo',  min: 1 / 80,                          max: 1 / 14 },
   ].forEach(({ key, label, min, max }) => {
     const row = document.createElement('div');
     row.className = 'ctrl-slider-row';

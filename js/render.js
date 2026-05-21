@@ -26,7 +26,7 @@ function buildSVG(state) {
   const tiFont = state.fontWeight === 'black' ? 'QSci Black' : 'QSci';
 
   // ── Font sizes ──
-  const fsDataLuogo = Math.round(W * CONFIG.typography.dataLuogoSizeRatio);
+  const fsDataLuogo = Math.round(W * (sr.dataLuogo || CONFIG.typography.dataLuogoSizeRatio));
   const fsTitolo    = Math.round(W * (sr.titolo || CONFIG.typography.titoloSizeRatio) * (state.fontWeight === 'black' ? 1.18 : 1));
   const fsTesto     = Math.min(
     Math.round(W * (sr.testo  || CONFIG.typography.testoSizeRatio)),
@@ -264,15 +264,20 @@ function buildSVG(state) {
 
   // Logos — auto-placed along bottom edge
   {
-    const logoH = Math.round(Math.min(W, H) * (CONFIG.typography.logoHeightRatio || 0.072));
     const visibleLogos = logos.filter(l => l.dataURL && l.visible !== false);
     const margin = Math.round(W * 0.03);
     const availableW = W - margin * 2;
 
+    // Per-logo height (each logo can have its own sizeRatio relative to min(W,H))
+    const logoHeights = visibleLogos.map(l =>
+      Math.round(Math.min(W, H) * (l.sizeRatio || CONFIG.typography.logoHeightRatio || 0.072))
+    );
+    const logoWidths = visibleLogos.map((l, i) => Math.round(logoHeights[i] / (l.aspectRatio || 1)));
+
     for (let i = 0; i < visibleLogos.length; i++) {
       const logo = visibleLogos[i];
-      const ar = logo.aspectRatio || 1;
-      const lw = Math.round(logoH / ar);
+      const lh = logoHeights[i];
+      const lw = logoWidths[i];
       let lx;
       if (logo.align === 'left') {
         lx = margin;
@@ -292,13 +297,14 @@ function buildSVG(state) {
           lx = Math.round(margin + (availableW - lw) * i / (visibleLogos.length - 1));
         }
       }
-      const ly = H - logoH - margin;
+      // Bottom-align each logo so different sizes share the same baseline
+      const ly = H - lh - margin;
       // Apply SVG recolor if color is set
       let src = logo.dataURL;
       if (logo.color && src && src.startsWith('data:image/svg')) {
         src = recolorSVG(src, logo.color);
       }
-      parts.push(`<image href="${src}" x="${lx}" y="${ly}" width="${lw}" height="${logoH}" opacity="${logo.opacity ?? 1}" preserveAspectRatio="xMidYMid meet"/>`);
+      parts.push(`<image href="${src}" x="${lx}" y="${ly}" width="${lw}" height="${lh}" opacity="${logo.opacity ?? 1}" preserveAspectRatio="xMidYMid meet"/>`);
     }
   }
 
@@ -318,7 +324,13 @@ function buildSVG(state) {
           else qx = Math.round((W - qrSize) / 2);
 
           const gap = Math.round(W * 0.02);
-          const logoAreaH = (logos.length > 0) ? Math.round(Math.min(W, H) * (CONFIG.typography.logoHeightRatio || 0.072)) + Math.round(W * 0.03) : 0;
+          const visibleLogosForQR = logos.filter(l => l.dataURL && l.visible !== false);
+          const maxLogoRatio = visibleLogosForQR.length
+            ? Math.max(...visibleLogosForQR.map(l => l.sizeRatio || CONFIG.typography.logoHeightRatio || 0.072))
+            : 0;
+          const logoAreaH = visibleLogosForQR.length
+            ? Math.round(Math.min(W, H) * maxLogoRatio) + Math.round(W * 0.03)
+            : 0;
           const bottomY = H - qrSize - margins.bottom - logoAreaH;
           const belowTesto = testoTop + testoBlockH + gap;
 

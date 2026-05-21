@@ -111,7 +111,12 @@ const ExportManager = (() => {
       titoloLH:            data.titoloLH           || 'normal',
       fontWeight:          data.fontWeight         || 'regular',
       textColors:          data.textColors || { title: '#302d2e', date: '#302d2e', testo: '#302d2e' },
-      sizeRatio:           { titolo: CONFIG.typography.titoloSizeRatio, testo: CONFIG.typography.testoSizeRatio, ...data.sizeRatio },
+      sizeRatio:           {
+        titolo:    CONFIG.typography.titoloSizeRatio,
+        testo:     CONFIG.typography.testoSizeRatio,
+        dataLuogo: CONFIG.typography.dataLuogoSizeRatio,
+        ...data.sizeRatio,
+      },
       customTexts:         data.customTexts    || [],
       shapes:              data.shapes         || [],
       logos:               data.logos          || [],
