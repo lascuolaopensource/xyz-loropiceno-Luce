@@ -2382,7 +2382,61 @@ function initSidebarResize() {
         body: JSON.stringify(entry)
       }).catch(() => {});
     } catch (e) { /* server not available */ }
+
+    // GitHub archive (fire-and-forget). Only runs if a token is configured in
+    // localStorage via /setup.html. The token never leaves this browser; it is
+    // sent only to api.github.com. No-op for other visitors.
+    try { commitEntryToGitHub(entry); } catch (e) { /* ignore */ }
   };
+
+  function _utf8ToBase64(str) {
+    // btoa() can't handle non-Latin1 chars; encode as UTF-8 first.
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+  function _slugForFile(s) {
+    return String(s || 'untitled')
+      .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60) || 'untitled';
+  }
+  async function commitEntryToGitHub(entry) {
+    const token = _lsGet('gh_token');
+    if (!token) return; // no token → silent no-op
+    const owner  = 'LucaTommy';
+    const repo   = 'Luce';
+    const branch = 'master';
+    const ts     = (entry.timestamp || new Date().toISOString()).replace(/[:.]/g, '-');
+    const slug   = _slugForFile(entry.title);
+    const fmt    = (entry.format || 'json').toLowerCase();
+    const path   = `files/${ts}__${fmt}__${slug}.json`;
+    const body   = {
+      message: `archive: ${entry.title || 'Senza Titolo'} (${fmt})`,
+      content: _utf8ToBase64(JSON.stringify(entry, null, 2)),
+      branch,
+    };
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path).replace(/%2F/g, '/')}`,
+        {
+          method:  'PUT',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept':        'application/vnd.github+json',
+            'Content-Type':  'application/json',
+          },
+          body: JSON.stringify(body),
+        }
+      );
+      if (!res.ok) {
+        const txt = await res.text();
+        console.warn('[archive-gh] failed', res.status, txt);
+      }
+    } catch (e) {
+      console.warn('[archive-gh] error:', e);
+    }
+  }
 
   window.__posterApp = { getCanvas, getState, applyImportedState };
 })();

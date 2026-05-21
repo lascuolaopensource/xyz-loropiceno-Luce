@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Archivio — Strumento Poster</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <style>
+    html, body { overflow: auto; }
+    body {
+      background: var(--bg-app);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+    }
+    .page { max-width: 1100px; margin: 32px auto; padding: 0 20px 64px; }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .header h1 { font-size: 22px; font-weight: 700; margin: 0 0 2px; letter-spacing: -0.3px; }
+    .header p  { color: var(--text-muted); margin: 0; font-size: 12px; }
+
+    .btn {
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 500;
+      color: var(--text); background: var(--bg-panel);
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn:hover { background: var(--bg-section-hov); }
+    .btn--accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn--accent:hover { background: var(--accent-hov); border-color: var(--accent-hov); }
+    .btn--danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+    .btn--danger:hover { background: var(--danger); color: #fff; }
+
+    .toolbar {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      align-items: flex-end;
+      padding: 12px 14px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+    }
+    .toolbar .field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 180px; }
+    .toolbar label {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted); font-weight: 700;
+    }
+    .toolbar select, .toolbar input[type="text"] {
+      padding: 6px 8px; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font-size: 12px;
+      font-family: inherit; color: var(--text);
+      background: var(--bg-panel); outline: none;
+    }
+    .toolbar .stretch { margin-left: auto; }
+
+    .tablewrap {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 14px; text-align: left; vertical-align: middle; }
+    th {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted); font-weight: 700;
+      background: var(--bg-section);
+      border-bottom: 1px solid var(--border);
+    }
+    td { border-bottom: 1px solid var(--border); font-size: 13px; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg-section); }
+    .col-actions { text-align: right; white-space: nowrap; }
+    .col-actions .btn { padding: 4px 8px; font-size: 11px; margin-left: 4px; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      background: var(--bg-section); color: var(--text-muted);
+    }
+    .badge--png  { background: rgba(34,197,94,0.12);  color: #16803c; }
+    .badge--pdf  { background: rgba(239,68,68,0.12);  color: #b91c1c; }
+    .badge--json { background: rgba(79,142,247,0.14); color: #1e57c8; }
+
+    .empty {
+      padding: 48px 16px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal {
+      background: var(--bg-panel);
+      padding: 22px 26px;
+      border-radius: var(--radius);
+      max-width: 380px; width: 92%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.18);
+    }
+    .modal h2 { margin: 0 0 6px; font-size: 16px; }
+    .modal p { margin: 0 0 18px; color: var(--text-muted); font-size: 13px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    .toast {
+      position: fixed;
+      bottom: 18px; right: 18px;
+      padding: 10px 18px;
+      background: #1a1a1a; color: #fff;
+      border-radius: var(--radius);
+      font-size: 12px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.18);
+      transform: translateY(80px);
+      transition: transform 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
+      z-index: 1100;
+    }
+    .toast.show { transform: translateY(0); }
+
+    .meta {
+      display: flex; gap: 10px; align-items: center;
+      font-size: 12px; color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .meta strong { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div>
+        <h1>Archivio esportazioni</h1>
+        <p>Tutti i documenti salvati nel repository GitHub. <span id="src-info"></span></p>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <a href="../index.html" class="btn">← Editor</a>
+        <a href="../setup.html" class="btn">⚙ Configurazione</a>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="field">
+        <label for="filter-month">Mese</label>
+        <select id="filter-month"><option value="all">Tutti i mesi</option></select>
+      </div>
+      <div class="field">
+        <label for="filter-format">Formato</label>
+        <select id="filter-format">
+          <option value="all">Tutti</option>
+          <option value="png">PNG</option>
+          <option value="pdf">PDF</option>
+          <option value="json">JSON</option>
+        </select>
+      </div>
+      <div class="field" style="flex:2">
+        <label for="filter-search">Cerca per titolo</label>
+        <input type="text" id="filter-search" placeholder="Cerca…">
+      </div>
+      <div class="stretch">
+        <button class="btn" id="btn-refresh" style="margin-right:8px">↻ Aggiorna</button>
+        <span id="count" style="font-size:11px;color:var(--text-muted)"></span>
+      </div>
+    </div>
+
+    <div class="tablewrap">
+      <table id="logs-table">
+        <thead>
+          <tr>
+            <th>Data e ora</th>
+            <th>Titolo</th>
+            <th>Formato</th>
+            <th>Formato pagina</th>
+            <th class="col-actions">Azioni</th>
+          </tr>
+        </thead>
+        <tbody id="logs-body"></tbody>
+      </table>
+      <div class="empty" id="empty" style="display:none">Nessun documento archiviato.</div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal">
+      <h2 id="modal-title">Sei sicuro?</h2>
+      <p id="modal-text">Questa azione non può essere annullata.</p>
+      <div class="modal-actions">
+        <button class="btn" id="modal-cancel">Annulla</button>
+        <button class="btn btn--accent" id="modal-ok">Conferma</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const OWNER  = 'LucaTommy';
+    const REPO   = 'Luce';
+    const BRANCH = 'master';
+    const DIR    = 'files';
+    const TOK_KEY = 'gh_token';
+
+    const $ = (id) => document.getElementById(id);
+    let allEntries = []; // [{ path, sha, ts, title, format, sizeId }]
+
+    function getToken() { try { return localStorage.getItem(TOK_KEY) || ''; } catch { return ''; } }
+    function escHTML(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function showToast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => t.classList.remove('show'), 2500);
+    }
+    function confirmDialog(title, text) {
+      return new Promise(resolve => {
+        $('modal-title').textContent = title;
+        $('modal-text').textContent = text;
+        $('modal-backdrop').classList.add('show');
+        const cleanup = (val) => {
+          $('modal-backdrop').classList.remove('show');
+          $('modal-cancel').onclick = null;
+          $('modal-ok').onclick = null;
+          resolve(val);
+        };
+        $('modal-cancel').onclick = () => cleanup(false);
+        $('modal-ok').onclick     = () => cleanup(true);
+      });
+    }
+
+    // Filename pattern: {iso-timestamp-dashed}__{format}__{slug-title}.json
+    function parseFilename(name) {
+      const m = name.match(/^(.+?)__([a-z]+)__(.+)\.json$/i);
+      if (!m) return { ts: '', format: '', slug: name.replace(/\.json$/i, '') };
+      // Reverse the ":→-" and ".→-" substitutions done at save time enough to
+      // produce a valid ISO string. The original was e.g.
+      // 2026-05-21T14-32-08-123Z — we need to flip the time separators back to colons
+      // (positions: after "T", count two segments).
+      let ts = m[1];
+      // Convert YYYY-MM-DDTHH-MM-SS-mmmZ → YYYY-MM-DDTHH:MM:SS.mmmZ
+      ts = ts.replace(/T(\d{2})-(\d{2})-(\d{2})-(\d+)Z$/, 'T$1:$2:$3.$4Z');
+      ts = ts.replace(/T(\d{2})-(\d{2})-(\d{2})Z$/,       'T$1:$2:$3Z');
+      return { ts, format: m[2].toLowerCase(), slug: m[3] };
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      if (isNaN(d)) return iso;
+      return d.toLocaleString('it-IT');
+    }
+
+    function monthKey(iso) {
+      if (typeof iso !== 'string') return '';
+      return iso.substring(0, 7);
+    }
+
+    function prettyTitle(slug) {
+      return String(slug || '').replace(/-/g, ' ').replace(/\s+/g, ' ').trim() || 'Senza Titolo';
+    }
+
+    async function ghFetch(url, opts) {
+      const headers = Object.assign({ 'Accept': 'application/vnd.github+json' }, (opts && opts.headers) || {});
+      const tok = getToken();
+      if (tok) headers['Authorization'] = 'token ' + tok;
+      const res = await fetch(url, Object.assign({}, opts, { headers, cache: 'no-store' }));
+      return res;
+    }
+
+    async function loadList() {
+      $('src-info').textContent = getToken() ? 'token attivo' : 'sola lettura (nessun token)';
+      $('logs-body').innerHTML = '';
+      $('empty').style.display = 'block';
+      $('empty').textContent = 'Caricamento…';
+      try {
+        const res = await ghFetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${DIR}?ref=${BRANCH}&t=${Date.now()}`);
+        if (res.status === 404) {
+          allEntries = []; render(); return;
+        }
+        if (!res.ok) {
+          $('empty').textContent = 'Errore caricamento (' + res.status + '). ' +
+            (res.status === 403 ? 'Limite API raggiunto — aggiungi un token per aumentare il limite.' : '');
+          return;
+        }
+        const items = await res.json();
+        if (!Array.isArray(items)) { allEntries = []; render(); return; }
+        allEntries = items
+          .filter(it => it.type === 'file' && /\.json$/i.test(it.name))
+          .map(it => {
+            const p = parseFilename(it.name);
+            return {
+              path:   it.path,
+              name:   it.name,
+              sha:    it.sha,
+              ts:     p.ts,
+              format: p.format,
+              title:  prettyTitle(p.slug),
+              size:   it.size,
+              download_url: it.download_url,
+            };
+          })
+          .sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
+        buildMonthFilter();
+        render();
+      } catch (e) {
+        $('empty').textContent = 'Errore di rete: ' + e.message;
+      }
+    }
+
+    function buildMonthFilter() {
+      const sel = $('filter-month');
+      const current = sel.value;
+      const months = [...new Set(allEntries.map(l => monthKey(l.ts)).filter(Boolean))]
+        .sort().reverse();
+      const labels = { '01':'Gennaio','02':'Febbraio','03':'Marzo','04':'Aprile','05':'Maggio','06':'Giugno','07':'Luglio','08':'Agosto','09':'Settembre','10':'Ottobre','11':'Novembre','12':'Dicembre' };
+      let html = '<option value="all">Tutti i mesi</option>';
+      months.forEach(m => {
+        const [y, mm] = m.split('-');
+        html += `<option value="${m}">${labels[mm] || mm} ${y}</option>`;
+      });
+      sel.innerHTML = html;
+      sel.value = months.includes(current) ? current : 'all';
+    }
+
+    function getFiltered() {
+      const month  = $('filter-month').value;
+      const format = $('filter-format').value;
+      const search = $('filter-search').value.toLowerCase().trim();
+      return allEntries.filter(l => {
+        if (month  !== 'all' && monthKey(l.ts) !== month) return false;
+        if (format !== 'all' && l.format !== format) return false;
+        if (search && !String(l.title || '').toLowerCase().includes(search)) return false;
+        return true;
+      });
+    }
+
+    function render() {
+      const tbody = $('logs-body');
+      const filtered = getFiltered();
+      $('count').textContent = `${filtered.length} di ${allEntries.length}`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        $('empty').style.display = 'block';
+        $('empty').textContent = allEntries.length === 0
+          ? 'Nessun documento archiviato.'
+          : 'Nessun risultato per i filtri selezionati.';
+        return;
+      }
+      $('empty').style.display = 'none';
+
+      tbody.innerHTML = filtered.map(l => {
+        const fmt = String(l.format || '').toLowerCase();
+        const fmtClass = (fmt === 'png' || fmt === 'pdf' || fmt === 'json') ? `badge--${fmt}` : '';
+        return `
+          <tr data-path="${escHTML(l.path)}" data-sha="${escHTML(l.sha)}">
+            <td style="color:var(--text-muted)">${escHTML(formatDate(l.ts))}</td>
+            <td><strong>${escHTML(l.title)}</strong></td>
+            <td><span class="badge ${fmtClass}">${escHTML(l.format || '—')}</span></td>
+            <td style="color:var(--text-muted)">—</td>
+            <td class="col-actions">
+              <button class="btn btn--accent" data-action="open">↗ Apri</button>
+              <button class="btn" data-action="download">↓ JSON</button>
+              <button class="btn btn--danger" data-action="delete">Elimina</button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    function openEntry(entry) {
+      // Hand the path off via the editor's #load= hash; editor will fetch and import.
+      location.href = `../index.html#load=${encodeURIComponent(entry.path)}`;
+    }
+
+    async function downloadEntry(entry) {
+      try {
+        const res = await fetch(entry.download_url + '?t=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) { showToast('Download fallito'); return; }
+        const text = await res.text();
+        const blob = new Blob([text], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = entry.name; a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      } catch (e) { showToast('Errore: ' + e.message); }
+    }
+
+    async function deleteEntry(entry) {
+      if (!getToken()) {
+        showToast('Aggiungi un token in /setup per eliminare.');
+        return;
+      }
+      const ok = await confirmDialog('Elimina documento', `Eliminare "${entry.title}" dal repository?`);
+      if (!ok) return;
+      try {
+        const res = await ghFetch(
+          `https://api.github.com/repos/${OWNER}/${REPO}/contents/${entry.path}`,
+          {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: `archive: delete ${entry.name}`,
+              sha: entry.sha,
+              branch: BRANCH,
+            }),
+          }
+        );
+        if (!res.ok) {
+          const t = await res.text();
+          showToast('Errore (' + res.status + ')');
+          console.warn(t);
+          return;
+        }
+        showToast('Documento eliminato.');
+        loadList();
+      } catch (e) { showToast('Errore: ' + e.message); }
+    }
+
+    $('logs-body').addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const tr = btn.closest('tr');
+      if (!tr) return;
+      const entry = allEntries.find(l => l.path === tr.dataset.path);
+      if (!entry) return;
+      const action = btn.dataset.action;
+      if (action === 'open')     openEntry(entry);
+      if (action === 'download') downloadEntry(entry);
+      if (action === 'delete')   deleteEntry(entry);
+    });
+
+    $('filter-month').addEventListener('change', render);
+    $('filter-format').addEventListener('change', render);
+    $('filter-search').addEventListener('input', render);
+    $('btn-refresh').addEventListener('click', loadList);
+
+    loadList();
+  </script>
+</body>
+</html>

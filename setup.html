@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Configurazione archivio — Strumento Poster</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    html, body { overflow: auto; }
+    body {
+      background: var(--bg-app);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+    }
+    .page { max-width: 640px; margin: 48px auto; padding: 0 20px 64px; }
+    h1   { font-size: 22px; margin: 0 0 6px; letter-spacing: -0.3px; }
+    .lead{ color: var(--text-muted); margin: 0 0 24px; font-size: 13px; line-height: 1.5; }
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .panel h2 { font-size: 14px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+    label.field-label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    input[type="password"], input[type="text"] {
+      width: 100%; box-sizing: border-box;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: var(--bg-app);
+      color: var(--text);
+      outline: none;
+    }
+    input:focus { border-color: var(--border-focus); }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .btn {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--bg-panel);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn:hover { background: var(--bg-section-hov); }
+    .btn--accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn--accent:hover { background: var(--accent-hov); border-color: var(--accent-hov); }
+    .btn--danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+    .btn--danger:hover { background: var(--danger); color: #fff; }
+    .status {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      display: none;
+    }
+    .status.show { display: block; }
+    .status.ok { background: rgba(34,197,94,0.12); color: #16803c; border: 1px solid rgba(34,197,94,0.3); }
+    .status.err{ background: rgba(239,68,68,0.12); color: #b91c1c; border: 1px solid rgba(239,68,68,0.3); }
+    .help {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+    .help ol { margin: 8px 0 0; padding-left: 22px; }
+    .help li { margin-bottom: 6px; }
+    .help code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: var(--bg-section);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    .links { margin-top: 16px; }
+    .links a { color: var(--accent); text-decoration: none; font-size: 12px; }
+    .links a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Configurazione archivio</h1>
+    <p class="lead">
+      Imposta il token GitHub per salvare automaticamente ogni esportazione
+      nella cartella <code>files/</code> del repository. Il token resta solo
+      su questo browser — non viene mai inviato altrove se non a
+      <code>api.github.com</code>.
+    </p>
+
+    <div class="panel">
+      <h2>Token GitHub (PAT)</h2>
+      <label class="field-label" for="tok">Personal Access Token</label>
+      <input type="password" id="tok" placeholder="github_pat_..." autocomplete="off" spellcheck="false">
+      <div class="row">
+        <button class="btn btn--accent" id="btn-save">Salva</button>
+        <button class="btn" id="btn-test">Verifica connessione</button>
+        <button class="btn" id="btn-show">Mostra/Nascondi</button>
+        <button class="btn btn--danger" id="btn-clear" style="margin-left:auto">Rimuovi token</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Come creare il token</h2>
+      <div class="help">
+        <ol>
+          <li>Vai su <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a> e crea un token <strong>fine-grained</strong>.</li>
+          <li>Imposta <strong>Repository access</strong> su <em>Only select repositories</em> e scegli <code>LucaTommy/Luce</code>.</li>
+          <li>Sotto <strong>Repository permissions</strong> imposta <code>Contents</code> su <em>Read and write</em>.</li>
+          <li>Crea il token, copialo e incollalo qui sopra, poi clicca <em>Salva</em>.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="links">
+      <a href="files/">→ Vai all'archivio</a>
+      &nbsp;·&nbsp;
+      <a href="index.html">← Torna all'editor</a>
+    </div>
+  </div>
+
+  <script>
+    const KEY = 'gh_token';
+    const $ = (id) => document.getElementById(id);
+
+    function showStatus(msg, kind) {
+      const el = $('status');
+      el.className = 'status show ' + (kind === 'err' ? 'err' : 'ok');
+      el.textContent = msg;
+      clearTimeout(showStatus._t);
+      showStatus._t = setTimeout(() => el.classList.remove('show'), 6000);
+    }
+
+    function getToken()  { try { return localStorage.getItem(KEY) || ''; } catch { return ''; } }
+    function setToken(t) { try { localStorage.setItem(KEY, t); } catch (e) { showStatus('Impossibile salvare in localStorage.', 'err'); } }
+    function clearToken(){ try { localStorage.removeItem(KEY); } catch {} }
+
+    $('tok').value = getToken();
+
+    $('btn-save').addEventListener('click', () => {
+      const t = $('tok').value.trim();
+      if (!t) { showStatus('Inserisci un token prima di salvare.', 'err'); return; }
+      setToken(t);
+      showStatus('Token salvato in questo browser.', 'ok');
+    });
+
+    $('btn-clear').addEventListener('click', () => {
+      clearToken();
+      $('tok').value = '';
+      showStatus('Token rimosso da questo browser.', 'ok');
+    });
+
+    $('btn-show').addEventListener('click', () => {
+      const el = $('tok');
+      el.type = el.type === 'password' ? 'text' : 'password';
+    });
+
+    $('btn-test').addEventListener('click', async () => {
+      const t = $('tok').value.trim() || getToken();
+      if (!t) { showStatus('Nessun token da verificare.', 'err'); return; }
+      showStatus('Verifica in corso…', 'ok');
+      try {
+        const res = await fetch('https://api.github.com/repos/LucaTommy/Luce', {
+          headers: { 'Authorization': 'token ' + t, 'Accept': 'application/vnd.github+json' },
+        });
+        if (!res.ok) {
+          showStatus('Errore ' + res.status + ' — verifica permessi e scadenza del token.', 'err');
+          return;
+        }
+        const data = await res.json();
+        const perms = data.permissions || {};
+        if (!perms.push) {
+          showStatus('Il token è valido ma non ha permesso di scrittura su questo repo.', 'err');
+          return;
+        }
+        showStatus('Connessione OK · permessi di scrittura attivi.', 'ok');
+      } catch (e) {
+        showStatus('Errore di rete: ' + e.message, 'err');
+      }
+    });
+  </script>
+</body>
+</html>

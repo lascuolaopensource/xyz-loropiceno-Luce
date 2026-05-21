@@ -172,7 +172,7 @@ const ExportManager = (() => {
     return `${safe}_${stamp}.${ext}`;
   }
 
-  return { init, collectState, buildExportFilename };
+  return { init, collectState, buildExportFilename, importState };
 })();
 
 // Expose so logExport (in app.js) can grab the same state-collection helper
@@ -182,7 +182,29 @@ window.ExportManager = ExportManager;
 document.addEventListener('DOMContentLoaded', () => {
   // Wait for app module to expose __posterApp, then init
   const tryInit = () => {
-    if (window.__posterApp) { ExportManager.init(); }
+    if (window.__posterApp) {
+      ExportManager.init();
+      // Hash-based re-import: /index.html#load=<path-in-repo>
+      // Used by the hidden /files archive page to re-open a saved JSON.
+      if (location.hash && location.hash.startsWith('#load=')) {
+        const path = decodeURIComponent(location.hash.slice('#load='.length));
+        const branch = 'master';
+        const url = `https://raw.githubusercontent.com/LucaTommy/Luce/${branch}/${path}?t=${Date.now()}`;
+        fetch(url, { cache: 'no-store' })
+          .then(r => r.ok ? r.json() : Promise.reject(r.status))
+          .then(payload => {
+            // Archive entries are wrapped { id, timestamp, format, title, sizeId, state }.
+            // Plain JSON exports are flat state objects. Handle both.
+            const data = (payload && payload.state) ? payload.state : payload;
+            ExportManager.importState(data);
+          })
+          .catch(e => console.warn('[load-from-archive] failed:', e))
+          .finally(() => {
+            // Clear the hash so a refresh doesn't re-import every time.
+            history.replaceState(null, '', location.pathname + location.search);
+          });
+      }
+    }
     else setTimeout(tryInit, 50);
   };
   tryInit();
