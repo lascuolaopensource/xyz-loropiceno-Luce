@@ -58,8 +58,9 @@ const state = {
   selectedImageId:   null,
   imageFilters:      {},
 
-  logos:          [],
-  selectedLogoId: null,
+  logos:           [],
+  selectedLogoId:  null,
+  logosSizeLinked: false,        // when true, resizing one logo resizes them all
   patternBg:      null,
   qrParams:       { enabled: false, url: '', sizeRatio: 0.1, vAlign: 'bottom', hAlign: 'center', gapRatio: 0.02, qrColor: '#000000' },
 
@@ -185,6 +186,7 @@ function _cloneState() {
     imageFilters:        { ...(state.imageFilters || {}) },
     logos:               (state.logos || []).map(l => ({ ...l })),
     selectedLogoId:      state.selectedLogoId,
+    logosSizeLinked:     !!state.logosSizeLinked,
     patternBg:           state.patternBg ? { ...state.patternBg } : null,
     customTexts:         (state.customTexts || []).map(t => ({ ...t })),
     shapes:              (state.shapes || []).map(s => ({ ...s, gradient: s.gradient ? { ...s.gradient } : null })),
@@ -231,6 +233,7 @@ function _applySnapshot(snap) {
   state.imageFilters    = { ...(snap.imageFilters || {}) };
   state.logos           = (snap.logos || []).map(l => ({ ...l }));
   state.selectedLogoId  = snap.selectedLogoId;
+  state.logosSizeLinked = !!snap.logosSizeLinked;
   state.patternBg       = snap.patternBg ? { ...snap.patternBg } : null;
 
   canvas.width  = state.canvasW;
@@ -1168,6 +1171,41 @@ function buildLogoControls() {
 
   if (!state.logos.length) return;
 
+  // Track per-logo size slider DOM refs so the "linked" mode can sync them
+  const _logoSizeSliders = [];
+
+  // ── Linked-size toggle (top of section) ──
+  {
+    const linkRow = document.createElement('div');
+    linkRow.className = 'ctrl-toggle-row';
+    linkRow.style.cssText = 'margin-bottom:8px';
+    const lblWrap = document.createElement('label');
+    lblWrap.className = 'toggle';
+    const chk = document.createElement('input');
+    chk.type = 'checkbox';
+    chk.checked = !!state.logosSizeLinked;
+    chk.addEventListener('change', () => {
+      pushHistory();
+      state.logosSizeLinked = chk.checked;
+      // When turning ON, snap all logos to the size of the first one so
+      // the toggle has a visible, predictable effect immediately.
+      if (state.logosSizeLinked && state.logos.length) {
+        const ref = state.logos[0].sizeRatio || CONFIG.typography.logoHeightRatio || 0.072;
+        state.logos.forEach(l => { l.sizeRatio = ref; });
+      }
+      buildLogoControls();
+      draw();
+    });
+    const trk = document.createElement('span');
+    trk.className = 'toggle-track';
+    const txt = document.createElement('span');
+    txt.className = 'ctrl-toggle-label';
+    txt.textContent = 'Dimensioni collegate';
+    lblWrap.append(chk, trk, txt);
+    linkRow.appendChild(lblWrap);
+    host.appendChild(linkRow);
+  }
+
   // Helper: button option group
   const btnGroup = (parent, options, current, onChange) => {
     const row = document.createElement('div');
@@ -1275,12 +1313,26 @@ function buildLogoControls() {
       szRange.addEventListener('mousedown', () => { _szFirst = true; });
       szRange.addEventListener('input', () => {
         if (_szFirst) { pushHistory(); _szFirst = false; }
-        logo.sizeRatio = Number(szRange.value);
-        szVal.textContent = pctFmt(logo.sizeRatio);
+        const v = Number(szRange.value);
+        logo.sizeRatio = v;
+        szVal.textContent = pctFmt(v);
+        // Linked mode: keep every other logo in sync with this slider
+        if (state.logosSizeLinked) {
+          state.logos.forEach((l, j) => {
+            if (l === logo) return;
+            l.sizeRatio = v;
+            const ref = _logoSizeSliders[j];
+            if (ref) {
+              ref.range.value = String(v);
+              ref.val.textContent = pctFmt(v);
+            }
+          });
+        }
         drawSmooth();
       });
       szRow.append(szLbl, szRange, szVal);
       card.appendChild(szRow);
+      _logoSizeSliders[i] = { range: szRange, val: szVal };
     }
 
     // Color picker for SVG logos
