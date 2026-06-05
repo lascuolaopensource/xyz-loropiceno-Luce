@@ -22,3 +22,9 @@ Il progetto nasce all'interno dell'ecosistema identitario del workshop, integran
 ├── QSci-Regular.otf      # Variante Regular del carattere di progetto
 ├── QSci-Black.otf        # Variante Black per accenti e titolazioni di impatto
 └── Logo.svg              # Identità visiva e vettoriale del tool
+
+## 👥 Crediti e Comunità
+Questo ecosistema è stato ideato, progettato e sviluppato collettivamente dai partecipanti del workshop **XYZ Loro Piceno 2026**, in tre assi:
+- **X:** Sistemi d'identità e comunicazione.
+- **Y:** Strumenti e tecnologie (sviluppo dell'hardware e del software dell'attrezzoteca).
+- **Z:** Processi e governance comunitaria.
