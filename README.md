@@ -6,6 +6,7 @@ Il progetto nasce all'interno dell'ecosistema identitario del workshop, integran
 
 **[Q-Sci](https://github.com/lascuolaopensource/xyz-loropiceno-font-Q-Sci)**
 
+
 ### 📁 Struttura della Repository
 
 ```text
@@ -21,10 +22,10 @@ Il progetto nasce all'interno dell'ecosistema identitario del workshop, integran
 ├── Q-Sci.otf             # File sorgente del sistema tipografico Q-Sci
 ├── QSci-Regular.otf      # Variante Regular del carattere di progetto
 ├── QSci-Black.otf        # Variante Black per accenti e titolazioni di impatto
-└── Logo.svg              # Identità visiva e vettoriale del tool```
+└── Logo.svg              # Identità visiva e vettoriale del tool
 
-## 👥 Crediti e Comunità
-Questo ecosistema è stato ideato, progettato e sviluppato collettivamente dai partecipanti del workshop **XYZ Loro Piceno 2026**, in tre assi:
-- **X:** Sistemi d'identità e comunicazione.
-- **Y:** Strumenti e tecnologie (sviluppo dell'hardware e del software dell'attrezzoteca).
-- **Z:** Processi e governance comunitaria.
+👥 Crediti e Comunità
+Questo ecosistema è stato ideato, progettato e sviluppato collettivamente dai partecipanti del workshop XYZ Loro Piceno 2026, in tre assi:
+X: Sistemi d'identità e comunicazione.
+Y: Strumenti e tecnologie (sviluppo dell'hardware e del software dell'attrezzoteca).
+Z: Processi e governance comunitaria.
